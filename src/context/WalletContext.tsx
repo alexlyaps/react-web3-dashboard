@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { connect } from "@/utils/connect.ts";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, Contract } from "ethers";
 import type { Signer } from "ethers";
 
 type ConnectionStatus = "disconnected" | "connecting" | "connected" | "error";
@@ -12,12 +12,14 @@ interface WalletState {
   status: ConnectionStatus;
   error: string | null;
   isLoading: boolean;
+  contract: Contract | null;
 }
 
 interface WalletContextValue extends WalletState {
   connectMetaMask: () => Promise<void>;
   disconnect: () => void;
   getSigner: () => Promise<Signer | null>;
+  getContract: () => void;
 }
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -30,6 +32,7 @@ export function WalletProvider({ children }: { children: React.ReactElement }) {
     status: "disconnected",
     error: null,
     isLoading: false,
+    contract: null,
   });
 
   const updateState = useCallback((updates: Partial<WalletState>) => {
@@ -106,6 +109,22 @@ export function WalletProvider({ children }: { children: React.ReactElement }) {
     }
   }, [state.provider, state.signer, updateState]);
 
+  const getContract = useCallback(() => {
+    const abi: string[] = [
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (bytes32)",
+      "function balanceOf(address a) view returns (uint)",
+    ];
+    const contract = new Contract(
+      "0x55d398326f99059fF775485246999027B3197955",
+      abi,
+      state.signer
+    );
+
+    updateState({ contract });
+    return contract;
+  }, [state.provider, state.signer, updateState]);
+
   useEffect(() => {
     if (!state.provider) return;
 
@@ -142,6 +161,7 @@ export function WalletProvider({ children }: { children: React.ReactElement }) {
     connectMetaMask,
     disconnect,
     getSigner,
+    getContract,
   };
 
   return (

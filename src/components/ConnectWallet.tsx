@@ -5,7 +5,7 @@ import { theme } from "@/theme/theme.ts";
 import { useWallet } from "@/context/WalletContext";
 
 export function ConnectWallet() {
-  const { connectMetaMask, disconnect } = useWallet();
+  const { connectMetaMask, disconnect, getContract } = useWallet();
 
   const ConnectWalletContainer = styled(Stack)(() => ({
     backgroundColor: theme.palette.primary.main,
@@ -24,6 +24,9 @@ export function ConnectWallet() {
         </Button>
         <Button color="secondary" variant="contained" onClick={disconnect}>
           Disconnect wallet
+        </Button>
+        <Button color="secondary" variant="contained" onClick={getContract}>
+          Fetch contract
         </Button>
       </ConnectWalletContainer>
     </>
